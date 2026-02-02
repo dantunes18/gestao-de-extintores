@@ -19,6 +19,54 @@ export const ExtinguisherTable: React.FC<TableProps> = ({ data, onDelete, onEdit
     (e.assignedEquipment && e.assignedEquipment.toLowerCase().includes(search.toLowerCase()))
   );
 
+  const handleExportCSV = () => {
+    if (filtered.length === 0) return;
+
+    // Cabeçalhos do CSV
+    const headers = [
+      'Código',
+      'Tipo',
+      'Capacidade',
+      'Localização',
+      'Equipamento Alocado',
+      'Última Manutenção',
+      'Data Validade',
+      'Estado'
+    ];
+
+    // Mapeamento dos dados
+    const rows = filtered.map(e => [
+      e.code,
+      e.type,
+      e.capacity,
+      e.location,
+      e.assignedEquipment || 'Nenhum',
+      e.lastMaintenance,
+      e.expiryDate,
+      e.status
+    ]);
+
+    // Construção do conteúdo CSV
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(';'))
+    ].join('\n');
+
+    // Adicionar BOM para suporte a caracteres acentuados no Excel
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    // Trigger do download
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `exportacao_extintores_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -34,13 +82,24 @@ export const ExtinguisherTable: React.FC<TableProps> = ({ data, onDelete, onEdit
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <button 
-          onClick={onAdd}
-          className="w-full md:w-auto px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-md shadow-red-200"
-        >
-          <span className="text-lg">+</span>
-          Novo Equipamento
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+          <button 
+            onClick={handleExportCSV}
+            className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 shadow-sm text-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Exportar CSV
+          </button>
+          <button 
+            onClick={onAdd}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-md shadow-red-200 text-sm"
+          >
+            <span className="text-lg">+</span>
+            Novo Equipamento
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
