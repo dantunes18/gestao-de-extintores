@@ -1,0 +1,5 @@
+{
+  "name": "GestExtintor",
+  "description": "Sistema profissional de base de dados para gestão e manutenção de extintores e equipamentos de segurança contra incêndios, com controlo de validade e alocação de ativos.",
+  "requestFramePermissions": []
+}
